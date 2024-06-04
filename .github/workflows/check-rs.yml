@@ -1,0 +1,31 @@
+name: "check-rs"
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  check-rs:
+    runs-on: "ubuntu-latest"
+
+    strategy:
+      matrix:
+        rust_version: ["1.77.2", "stable"]
+
+    steps:
+      - name: "Checkout repository"
+        uses: "actions/checkout@v4"
+
+      - name: "Ensure Rust toolchain is present (${{ matrix.rust_version }})"
+        run: "rustup toolchain add --profile=minimal --component rustfmt --component clippy -- ${{ matrix.rust_version }}"
+
+      - name: "Set default Rust toolchain (${{ matrix.rust_version }})"
+        run: "rustup default ${{ matrix.rust_version }}"
+
+      - name: "Run Clippy checks"
+        run: "cargo clippy --all-targets --all-features -- -D warnings"
+
+      - name: "Run tests"
+        run: "cargo test --all-features"

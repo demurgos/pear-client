@@ -1,0 +1,45 @@
+[workspace]
+members = [
+    ".",
+    "./examples/*"
+]
+
+[package]
+name = "pear_client"
+version = "0.1.0"
+authors = ["Charles Samborski <demurgos@demurgos.net>"]
+description = "PEAR and PECL client"
+documentation = "https://docs.rs/pear_client"
+homepage = "https://github.com/demurgos/pear-client"
+repository = "https://github.com/demurgos/pear-client"
+readme = "./README.md"
+keywords = ["pear", "pecl", "api"]
+license = "AGPL-3.0-or-later"
+edition = "2021"
+rust-version = "1.77.2"
+
+[dependencies]
+async-trait = "0.1.66"
+bytes = "1.6.0"
+chrono = "0.4.24"
+compact_str = "0.7.1"
+futures = "0.3.30"
+http = { version = "1.1.0", optional = true }
+http-body = { version = "1.0.0", optional = true }
+http-body-util = { version = "0.1.1", optional = true }
+itoa = "1.0.6"
+reqwest = { version = "0.11.14", optional = true, default-features = false, features = ["json", "rustls-tls"] }
+serde = { version = "1.0.155", features = ["derive"], optional = true }
+serde_json = { version = "1.0.94", features = ["preserve_order"], optional = true }
+thiserror = "1.0.40"
+tower-service = "0.3.2"
+url = { version = "2.3.1" }
+markup5ever_rcdom = "0.3.0"
+xml5ever = "0.18.0"
+clap = { version = "4.5.4", features = ["derive"] }
+
+[features]
+default = ["http"]
+serde = ["dep:serde", "bytes/serde", "compact_str/serde", "chrono/serde", "url/serde"]
+http = ["dep:http", "dep:http-body", "dep:http-body-util", "dep:serde_json", "serde"]
+reqwest = ["dep:reqwest", "dep:serde_json", "serde"]
