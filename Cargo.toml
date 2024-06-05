@@ -28,18 +28,16 @@ http = { version = "1.1.0", optional = true }
 http-body = { version = "1.0.0", optional = true }
 http-body-util = { version = "0.1.1", optional = true }
 itoa = "1.0.6"
-reqwest = { version = "0.11.14", optional = true, default-features = false, features = ["json", "rustls-tls"] }
 serde = { version = "1.0.155", features = ["derive"], optional = true }
 serde_json = { version = "1.0.94", features = ["preserve_order"], optional = true }
 thiserror = "1.0.40"
 tower-service = "0.3.2"
 url = { version = "2.3.1" }
 markup5ever_rcdom = "0.3.0"
-xml5ever = "0.18.0"
+xml5ever = "0.18.1"
 clap = { version = "4.5.4", features = ["derive"] }
 
 [features]
 default = ["http"]
 serde = ["dep:serde", "bytes/serde", "compact_str/serde", "chrono/serde", "url/serde"]
 http = ["dep:http", "dep:http-body", "dep:http-body-util", "dep:serde_json", "serde"]
-reqwest = ["dep:reqwest", "dep:serde_json", "serde"]

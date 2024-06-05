@@ -182,9 +182,8 @@ pub struct Release<Str = CompactString> {
   pub time: Str,
   pub release_notes: Str,
   pub archive: ReleaseArchive<Str>,
-  // todo: expose extracted link once `https://github.com/servo/html5ever/issues/538` is fixed.
-  // /// Link to extracted release info
-  // pub extracted_link: Str,
+  /// Link to extracted release info
+  pub extracted_link: Str,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -199,7 +198,7 @@ pub struct ReleaseArchive<Str = CompactString> {
   pub link: Str,
 }
 
-impl crate::common::release::Release<CompactString> {
+impl Release<CompactString> {
   pub fn from_xml(mut input: &[u8]) -> Self {
     let input = &mut input;
     let sink = RcDom::default();
@@ -216,7 +215,7 @@ pub enum ReleaseFromRcDomError {
   Read(#[from] crate::common::release::ReleaseFromXmlNodeError),
 }
 
-impl crate::common::release::Release<CompactString> {
+impl Release<CompactString> {
   pub fn from_rc_dom(dom: RcDom) -> Result<Self, ReleaseFromRcDomError> {
     let doc = dom.document;
     let root = find_root(&doc, "r").map_err(|_| ReleaseFromRcDomError::RootNotFound)?;
@@ -316,8 +315,8 @@ pub enum ReleaseFromXmlNodeError {
   InvalidExtracted,
 }
 
-impl crate::common::release::Release<CompactString> {
-  pub fn from_xml_node(node: &Node) -> Result<Self, crate::common::release::ReleaseFromXmlNodeError> {
+impl Release<CompactString> {
+  pub fn from_xml_node(node: &Node) -> Result<Self, ReleaseFromXmlNodeError> {
     use ReleaseFromXmlNodeError as E;
 
     let mut package: Option<ReleasePackage<CompactString>> = None;
@@ -332,7 +331,7 @@ impl crate::common::release::Release<CompactString> {
     let mut release_notes: Option<CompactString> = None;
     let mut archive_size: Option<CompactString> = None;
     let mut archive_link: Option<CompactString> = None;
-    // let mut extracted: Option<CompactString> = None;
+    let mut extracted: Option<CompactString> = None;
 
     for (i, handle) in node.children.borrow().iter().enumerate() {
       let node: &Node = handle;
@@ -450,17 +449,15 @@ impl crate::common::release::Release<CompactString> {
               return Err(E::DuplicateArchiveLink);
             }
           } else if name.prefix.is_none() && name.local.eq_str_ignore_ascii_case("x") {
-            // todo: restore extract link support once <https://github.com/servo/html5ever/issues/538> is fixed
-            continue;
-            // let attrs = &*attrs.borrow();
-            // if archive_link.is_none() {
-            //   return Err(E::MissingArchiveLink);
-            // }
-            // let new = get_link_attr(attrs).map_err(|_| E::ReadExtracted(i))?.ok_or(E::InvalidExtracted)?;
-            // let old = extracted.replace(CompactString::new(new.value.as_ref()));
-            // if old.is_some() {
-            //   return Err(E::DuplicateExtracted);
-            // }
+            let attrs = &*attrs.borrow();
+            if archive_link.is_none() {
+              return Err(E::MissingArchiveLink);
+            }
+            let new = get_link_attr(attrs).map_err(|_| E::ReadExtracted(i))?.ok_or(E::InvalidExtracted)?;
+            let old = extracted.replace(CompactString::new(new.value.as_ref()));
+            if old.is_some() {
+              return Err(E::DuplicateExtracted);
+            }
           } else {
             return Err(E::ChildType(i));
           }
@@ -485,7 +482,7 @@ impl crate::common::release::Release<CompactString> {
         size: archive_size.ok_or(E::MissingArchiveSize)?.parse::<u64>().map_err(|_| E::InvalidArchiveSize)?,
         link: archive_link.ok_or(E::MissingArchiveLink)?,
       },
-      // extracted_link: extracted.ok_or(E::MissingExtracted)?,
+      extracted_link: extracted.ok_or(E::MissingExtracted)?,
     })
   }
 }
