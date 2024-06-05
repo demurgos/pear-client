@@ -6,7 +6,7 @@ members = [
 
 [package]
 name = "pear_client"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["Charles Samborski <demurgos@demurgos.net>"]
 description = "PEAR and PECL client"
 documentation = "https://docs.rs/pear_client"
